@@ -12,7 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configService.get<string>('jwt.secret'),
+      secretOrKey: configService.get<string>('jwt.secrets.accessToken'),
     });
   }
 
@@ -22,8 +22,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
     const response = await this.authService.validateUser(payload.sub);
     return {
-      userId: response.id,
+      id: response.id,
       username: response.username,
+      email: response.email,
+      businessId: response.business.id,
     };
   }
 }

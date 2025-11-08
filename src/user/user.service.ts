@@ -103,7 +103,10 @@ export class UserService {
     NOTE: The functions findByUsername, findByUserId are used in authentication process.
   */
   async findByUsername(username: string) {
-    return await this.userRepository.findOneBy({ username });
+    return await this.userRepository.findOne({
+      where: { username },
+      relations: { business: true },
+    });
   }
 
   async findByUserId(id: string) {

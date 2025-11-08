@@ -21,7 +21,10 @@ export const DbConfig: ConfigFactory = () => ({
 
 export const JwtConfig: ConfigFactory = () => ({
   jwt: {
-    secret: process.env.JWT_SECRET,
+    secrets: {
+      accessToken: process.env.JWT_ACCESS_SECRET,
+      refreshToken: process.env.JWT_REFRESH_SECRET,
+    },
     expiresIn: process.env.JWT_EXPIRES_IN,
   },
 });
