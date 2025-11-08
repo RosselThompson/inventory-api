@@ -6,6 +6,7 @@ import { BaseConfig, DbConfig, JwtConfig } from './config/configuration';
 import { AuthModule } from './auth/auth.module';
 import { AuthProvider } from './auth/providers/auth.provider';
 import { LoggerConfigModule } from './config/logger/logger.module';
+import { BusinessModule } from './business/business.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { LoggerConfigModule } from './config/logger/logger.module';
     LoggerConfigModule,
     AuthModule,
     UserModule,
+    BusinessModule,
   ],
   providers: [AuthProvider],
 })
