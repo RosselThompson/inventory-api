@@ -3,15 +3,17 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Query,
+  Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BusinessService } from './business.service';
 import { BusinessDto } from './dto/business.dto';
 import { ENDPOINTS } from 'src/common/constants/endpoints';
 import { MODULES } from 'src/common/constants/modules';
+import { BusinessQueryDto } from './dto/business-query.dto';
 
 @Controller(ENDPOINTS.BUSINESS)
 @ApiTags(MODULES.BUSINESS)
@@ -24,22 +26,22 @@ export class BusinessController {
   }
 
   @Get()
-  findAll() {
-    return this.businessService.findAll();
+  findAll(@Query() businessQueryDto: BusinessQueryDto) {
+    return this.businessService.findAll(businessQueryDto);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.businessService.findOne(+id);
+    return this.businessService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() businessDto: BusinessDto) {
-    return this.businessService.update(+id, businessDto);
+    return this.businessService.update(id, businessDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.businessService.remove(+id);
+    return this.businessService.remove(id);
   }
 }

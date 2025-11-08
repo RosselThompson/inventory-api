@@ -27,7 +27,10 @@ export class User extends BaseEntity {
   cellphone: string;
 
   @Column({ name: 'is_verified', default: true })
-  isVerified: string;
+  isVerified: boolean;
+
+  @Column({ name: 'is_visible', default: true })
+  isVisible: boolean;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

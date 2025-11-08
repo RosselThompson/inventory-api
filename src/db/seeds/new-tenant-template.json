@@ -1,0 +1,18 @@
+{
+  "business": {
+    "legalId": "",
+    "legalName": "",
+    "tradeName": "",
+    "industry": "",
+    "country": "",
+    "city": "",
+    "address": "",
+    "phone": "",
+    "email": ""
+  },
+  "user": {
+    "username": "",
+    "password": "",
+    "email": ""
+  }
+}

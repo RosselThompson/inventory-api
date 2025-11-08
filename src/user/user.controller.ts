@@ -7,11 +7,12 @@ import {
   Param,
   Delete,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
-import { UserActivateDto } from './dto/user-activate.dto';
+import { ActivateDto } from '../common/dto/activate.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { ENDPOINTS } from 'src/common/constants/endpoints';
 import { MODULES } from 'src/common/constants/modules';
@@ -41,9 +42,9 @@ export class UserController {
     return this.userService.update(id, userDto);
   }
 
-  @Put(':id/activate')
-  activate(@Param('id') id: string, @Body() userActivateDto: UserActivateDto) {
-    return this.userService.activate(id, userActivateDto);
+  @Patch(':id/activate')
+  activate(@Param('id') id: string, @Body() activateDto: ActivateDto) {
+    return this.userService.activate(id, activateDto);
   }
 
   @Delete(':id')

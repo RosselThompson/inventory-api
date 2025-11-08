@@ -4,12 +4,10 @@ import {
   IsOptional,
   IsString,
   Matches,
-  IsEnum,
   IsBoolean,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { fieldMatchErrorMessage } from 'src/common/helpers/messages';
-import { UserRoleType } from 'src/common/constants/enums/user.enum';
 import { NIO_NID_REGEX } from 'src/common/constants/regex';
 
 export class UserDto {
@@ -22,11 +20,6 @@ export class UserDto {
   @IsNotEmpty()
   @IsString()
   password: string;
-
-  @ApiProperty({ enum: UserRoleType, default: UserRoleType.Admin })
-  @IsNotEmpty()
-  @IsEnum(UserRoleType)
-  role: string;
 
   @ApiProperty()
   @IsNotEmpty()

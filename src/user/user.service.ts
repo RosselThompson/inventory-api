@@ -17,7 +17,7 @@ import { paginateData } from 'src/common/helpers/paginate-data';
 import { addSearchQuery } from 'src/common/helpers/search-query';
 import { validateUUID } from 'src/common/helpers/validations';
 import { MODULES } from 'src/common/constants/modules';
-import { UserActivateDto } from './dto/user-activate.dto';
+import { ActivateDto } from '../common/dto/activate.dto';
 
 @Injectable()
 export class UserService {
@@ -69,11 +69,11 @@ export class UserService {
     return httpOk(removedRecordMessage(MODULES.USER, id));
   }
 
-  async activate(id: string, userActivateDto: UserActivateDto) {
+  async activate(id: string, activateDto: ActivateDto) {
     validateUUID(MODULES.USER, id);
     await this.findOne(id);
     await this.userRepository.update(id, {
-      isActive: userActivateDto.isActive,
+      isActive: activateDto.isActive,
     });
     return httpOk(changedStatusMessage(MODULES.USER, id));
   }
