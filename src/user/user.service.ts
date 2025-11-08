@@ -7,7 +7,7 @@ import { User } from './entities/user.entity';
 import { hashPassword } from 'src/common/helpers/hash-password';
 import { httpBadRequest, httpOk } from 'src/common/helpers/http-response';
 import {
-  changeStatusMessage,
+  changedStatusMessage,
   existingFieldMessage,
   notFoundIdMessage,
   removedRecordMessage,
@@ -66,7 +66,7 @@ export class UserService {
     validateUUID(MODULES.USER, id);
     await this.findOne(id);
     await this.userRepository.softDelete({ id });
-    return httpOk(removedRecordMessage(MODULES.USER));
+    return httpOk(removedRecordMessage(MODULES.USER, id));
   }
 
   async activate(id: string, userActivateDto: UserActivateDto) {
@@ -75,7 +75,7 @@ export class UserService {
     await this.userRepository.update(id, {
       isActive: userActivateDto.isActive,
     });
-    return httpOk(changeStatusMessage(MODULES.USER, id));
+    return httpOk(changedStatusMessage(MODULES.USER, id));
   }
 
   async checkUniqueUser(username: string) {
@@ -94,8 +94,6 @@ export class UserService {
       UserSearchType.Username,
       userQueryDto.s_username,
     );
-    addSearchQuery(queryBuilder, UserSearchType.Role, userQueryDto.s_role);
-    addSearchQuery(queryBuilder, UserSearchType.Nid, userQueryDto.s_nid);
     addSearchQuery(queryBuilder, UserSearchType.Email, userQueryDto.s_email);
 
     return queryBuilder;

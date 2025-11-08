@@ -1,6 +1,7 @@
+import { Business } from 'src/business/entities/business.entity';
 import { DB_TABLE_NAMES } from 'src/common/constants/db-table';
 import { BaseEntity } from 'src/common/entities/base.entity';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity(DB_TABLE_NAMES.USER)
 export class User extends BaseEntity {
@@ -30,4 +31,8 @@ export class User extends BaseEntity {
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
+
+  @ManyToOne(() => Business, (business) => business.users)
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
 }

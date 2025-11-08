@@ -14,13 +14,5 @@ export class UserQueryDto extends PaginationOptionsDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  s_role?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  s_nid?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
   s_email?: string;
 }
