@@ -25,6 +25,9 @@ export const JwtConfig: ConfigFactory = () => ({
       accessToken: process.env.JWT_ACCESS_SECRET,
       refreshToken: process.env.JWT_REFRESH_SECRET,
     },
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: {
+      access: process.env.JWT_ACCESS_EXPIRES_IN,
+      refresh: process.env.JWT_REFRESH_EXPIRES_IN,
+    },
   },
 });
