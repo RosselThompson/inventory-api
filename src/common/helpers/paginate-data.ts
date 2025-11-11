@@ -3,10 +3,11 @@ import { PaginationOptionsDto } from '../dto/pagination-options.dto';
 import { PaginationMetaDto } from '../dto/pagination-meta.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 
-export const paginateData = async (
-  entityName: string,
+export const paginateData = async <T>(
+  dbTableName: string,
   pageOptionsDto: PaginationOptionsDto,
-  queryBuilder: SelectQueryBuilder<any>,
+  queryBuilder: SelectQueryBuilder<T>,
+  customMapper?: (entities: T[], raw: any[]) => any[],
 ) => {
   const defaultPageOptions = new PaginationOptionsDto();
   const pageConfig: PaginationOptionsDto = {
@@ -16,12 +17,16 @@ export const paginateData = async (
   const skip = (pageConfig.page - 1) * pageConfig.size;
 
   queryBuilder
-    .orderBy(`${entityName}.${pageConfig.sortBy}`, pageConfig.orderBy)
+    .orderBy(`${dbTableName}.${pageConfig.sortBy}`, pageConfig.orderBy)
     .skip(skip)
     .take(pageConfig.size);
 
   const itemCount = await queryBuilder.getCount();
-  const { entities: data } = await queryBuilder.getRawAndEntities();
+  const { raw: rawData, entities: entities } =
+    await queryBuilder.getRawAndEntities();
+
+  const data = customMapper ? customMapper(rawData, entities) : entities;
+
   const pageMetaDto = new PaginationMetaDto({
     itemCount,
     pageOptionsDto: pageConfig,

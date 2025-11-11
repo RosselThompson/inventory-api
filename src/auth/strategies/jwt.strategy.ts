@@ -20,12 +20,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!payload.sub) {
       return null;
     }
-    const response = await this.authService.validateUser(payload.sub);
+    const user = await this.authService.validateUser(payload.sub);
     return {
-      id: response.id,
-      username: response.username,
-      email: response.email,
-      businessId: response.business.id,
+      id: user?.id,
+      username: user?.username,
+      email: user?.email,
+      businessId: user?.business?.id,
     };
   }
 }

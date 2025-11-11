@@ -18,6 +18,7 @@ import { addSearchQuery } from 'src/common/helpers/search-query';
 import { validateUUID } from 'src/common/helpers/validations';
 import { MODULES } from 'src/common/constants/modules';
 import { ActivateDto } from '../common/dto/activate.dto';
+import { DB_TABLE_NAMES } from 'src/common/constants/db-table';
 
 @Injectable()
 export class UserService {
@@ -33,10 +34,13 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async findAll(userQueryDto: UserQueryDto) {
-    const userQueryBuilder = this.generateQueryBuilder(userQueryDto);
+  async findAll(userQueryDto: UserQueryDto, businessId: string) {
+    const userQueryBuilder = this.generateQueryBuilder(
+      userQueryDto,
+      businessId,
+    );
     const paginationData = await paginateData(
-      MODULES.USER,
+      DB_TABLE_NAMES.USER,
       userQueryDto,
       userQueryBuilder,
     );
@@ -86,15 +90,21 @@ export class UserService {
       );
   }
 
-  generateQueryBuilder = (userQueryDto: UserQueryDto) => {
-    const queryBuilder = this.userRepository.createQueryBuilder(MODULES.USER);
+  generateQueryBuilder = (userQueryDto: UserQueryDto, businessId: string) => {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder(DB_TABLE_NAMES.USER)
+      .where(`${DB_TABLE_NAMES.USER}.business_id = :businessId`, {
+        businessId: businessId,
+      })
+      .where(`${DB_TABLE_NAMES.USER}.is_visible = :isVisible`, {
+        isVisible: true,
+      });
 
     addSearchQuery(
       queryBuilder,
       UserSearchType.Username,
       userQueryDto.s_username,
     );
-    addSearchQuery(queryBuilder, UserSearchType.Email, userQueryDto.s_email);
 
     return queryBuilder;
   };
@@ -110,7 +120,10 @@ export class UserService {
   }
 
   async findByUserId(id: string) {
-    const response = await this.userRepository.findOneBy({ id });
+    const response = await this.userRepository.findOne({
+      where: { id },
+      relations: { business: true },
+    });
     if (!response) return null;
     return response;
   }

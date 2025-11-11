@@ -15,7 +15,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         global: true,
         secret: configService.get<string>('jwt.secrets.accessToken'),
         signOptions: {
-          expiresIn: configService.get<string>('jwt.expiresIn.accessToken'),
+          expiresIn: configService.get<string>('jwt.expiresIn.access'),
         },
       }),
     }),

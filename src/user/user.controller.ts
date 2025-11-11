@@ -16,6 +16,7 @@ import { ActivateDto } from '../common/dto/activate.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { ENDPOINTS } from 'src/common/constants/endpoints';
 import { MODULES } from 'src/common/constants/modules';
+import { CurrentBusiness } from 'src/auth/decorators/current-business.decorator';
 
 @Controller(ENDPOINTS.USER)
 @ApiTags(MODULES.USER)
@@ -28,8 +29,11 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Query() userQueryDto: UserQueryDto) {
-    return this.userService.findAll(userQueryDto);
+  findAll(
+    @Query() userQueryDto: UserQueryDto,
+    @CurrentBusiness() businessId: string,
+  ) {
+    return this.userService.findAll(userQueryDto, businessId);
   }
 
   @Get(':id')
