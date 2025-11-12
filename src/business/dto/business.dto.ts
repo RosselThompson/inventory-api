@@ -5,45 +5,30 @@ export class BusinessDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  legalId: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  legalName: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
   tradeName: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  industry: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
   country: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   city: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   address: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   phone: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   email: string;
 

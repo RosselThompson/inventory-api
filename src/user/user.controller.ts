@@ -24,8 +24,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  create(@Body() userDto: UserDto) {
-    return this.userService.create(userDto);
+  create(@Body() userDto: UserDto, @CurrentBusiness() businessId: string) {
+    return this.userService.create(userDto, businessId);
   }
 
   @Get()
@@ -37,22 +37,30 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentBusiness() businessId: string) {
+    return this.userService.findOne(id, businessId);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() userDto: UserDto) {
-    return this.userService.update(id, userDto);
+  update(
+    @Param('id') id: string,
+    @Body() userDto: UserDto,
+    @CurrentBusiness() businessId: string,
+  ) {
+    return this.userService.update(id, userDto, businessId);
   }
 
   @Patch(':id/activate')
-  activate(@Param('id') id: string, @Body() activateDto: ActivateDto) {
-    return this.userService.activate(id, activateDto);
+  activate(
+    @Param('id') id: string,
+    @Body() activateDto: ActivateDto,
+    @CurrentBusiness() businessId: string,
+  ) {
+    return this.userService.activate(id, activateDto, businessId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+  remove(@Param('id') id: string, @CurrentBusiness() businessId: string) {
+    return this.userService.remove(id, businessId);
   }
 }

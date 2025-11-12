@@ -7,4 +7,5 @@ export enum UserSearchType {
   Username = 'username',
   Nid = 'nid',
   Email = 'email',
+  IsActive = 'is_active',
 }

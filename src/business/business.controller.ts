@@ -1,47 +1,26 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Query,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Body, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BusinessService } from './business.service';
 import { BusinessDto } from './dto/business.dto';
 import { ENDPOINTS } from 'src/common/constants/endpoints';
 import { MODULES } from 'src/common/constants/modules';
-import { BusinessQueryDto } from './dto/business-query.dto';
+import { CurrentBusiness } from 'src/auth/decorators/current-business.decorator';
 
 @Controller(ENDPOINTS.BUSINESS)
 @ApiTags(MODULES.BUSINESS)
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
-  @Post()
-  create(@Body() businessDto: BusinessDto) {
-    return this.businessService.create(businessDto);
+  @Get('me')
+  findOne(@CurrentBusiness() businessId: string) {
+    return this.businessService.findOne(businessId);
   }
 
-  @Get()
-  findAll(@Query() businessQueryDto: BusinessQueryDto) {
-    return this.businessService.findAll(businessQueryDto);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.businessService.findOne(id);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: string, @Body() businessDto: BusinessDto) {
-    return this.businessService.update(id, businessDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.businessService.remove(id);
+  @Put('me')
+  update(
+    @CurrentBusiness() businessId: string,
+    @Body() businessDto: BusinessDto,
+  ) {
+    return this.businessService.update(businessId, businessDto);
   }
 }

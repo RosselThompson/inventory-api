@@ -53,9 +53,4 @@ export class UserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  companyId: string;
 }

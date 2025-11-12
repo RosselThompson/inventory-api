@@ -11,4 +11,8 @@ export class UserQueryDto extends PaginationOptionsDto {
   @ApiPropertyOptional()
   @IsOptional()
   s_username?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  s_isActive?: boolean;
 }

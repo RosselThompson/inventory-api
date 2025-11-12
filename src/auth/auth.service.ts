@@ -23,14 +23,28 @@ export class AuthService {
       signInDto.password,
       user?.password || '',
     );
+    const isValidUser = user && isValidPass && isVerified && isActive;
+    const isBusinessActive =
+      user?.business?.isActive && user?.business?._deletedAt === null;
 
-    if (!isActive || !isValidPass || !isVerified) {
-      throw httpBadRequest('Invalid username or password');
-    }
+    this.validateAuthentication(isValidUser, isBusinessActive);
 
     const tokens = this.generateTokens(user);
     return tokens;
   }
+
+  validateAuthentication(isValidUser: boolean, isBusinessActive: boolean) {
+    if (!isBusinessActive) {
+      throw httpBadRequest(
+        'The business associated with this user is inactive',
+      );
+    }
+
+    if (!isValidUser) {
+      throw httpBadRequest('Invalid username or password');
+    }
+  }
+
   async validateUser(id: string) {
     return await this.userService.findByUserId(id);
   }
