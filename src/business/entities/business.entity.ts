@@ -1,5 +1,6 @@
 import { DB_TABLE_NAMES } from 'src/common/constants/db-table';
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Column, Entity, JoinColumn, OneToMany } from 'typeorm';
 
@@ -38,4 +39,8 @@ export class Business extends BaseEntity {
   @OneToMany(() => User, (user) => user.business)
   @JoinColumn()
   users: User[];
+
+  @OneToMany(() => Product, (product) => product.business)
+  @JoinColumn()
+  products: User[];
 }

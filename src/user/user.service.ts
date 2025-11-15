@@ -97,7 +97,10 @@ export class UserService {
       );
   }
 
-  generateQueryBuilder = (userQueryDto: UserQueryDto, businessId: string) => {
+  private generateQueryBuilder = (
+    userQueryDto: UserQueryDto,
+    businessId: string,
+  ) => {
     const queryBuilder = this.userRepository
       .createQueryBuilder(DB_TABLE_NAMES.USER)
       .where(`${DB_TABLE_NAMES.USER}.business_id = :businessId`, {

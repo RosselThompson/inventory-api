@@ -1,1 +1,5 @@
-export const MODULES = { USER: 'User', BUSINESS: 'Business' };
+export const MODULES = {
+  USER: 'User',
+  BUSINESS: 'Business',
+  PRODUCT: 'Product',
+};
