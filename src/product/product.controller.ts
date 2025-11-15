@@ -13,8 +13,12 @@ import { ProductDto, UpdateProductStockDto } from './dto/product.dto';
 import { CurrentBusiness } from 'src/auth/decorators/current-business.decorator';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { Put } from '@nestjs/common';
+import { ENDPOINTS } from 'src/common/constants/endpoints';
+import { MODULES } from 'src/common/constants/modules';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('product')
+@Controller(ENDPOINTS.PRODUCT)
+@ApiTags(MODULES.PRODUCT)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 

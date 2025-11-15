@@ -21,3 +21,11 @@ export const changedPropertyMessage = (
 
 export const existingIdsMessage = (entityName: string, ids: string[]) =>
   `${entityName} ids: ${ids} already exist and cannot be added as new`;
+
+export const movementLogMessage = (
+  movementId: string,
+  movementType: string,
+  movementOp: string,
+  productId: string,
+) =>
+  `Movement created - ID: ${movementId}, Type: ${movementType}, Operation: ${movementOp}, Product ID: ${productId}`;

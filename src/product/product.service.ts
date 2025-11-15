@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ProductDto, UpdateProductStockDto } from './dto/product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +14,12 @@ import { MODULES } from 'src/common/constants/modules';
 import { httpBadRequest, httpOk } from 'src/common/helpers/http-response';
 import { notFoundIdMessage } from 'src/common/helpers/messages';
 import { removedRecordMessage } from '../common/helpers/messages';
+import { MovementService } from 'src/movement/movement.service';
+import { MovementDto } from 'src/movement/dto/movement.dto';
+import {
+  MovementOperationType,
+  MovementType,
+} from '../common/constants/enums/movement.enum';
 
 @Injectable()
 export class ProductService {
@@ -23,12 +29,24 @@ export class ProductService {
 
     @Inject(BusinessService)
     private readonly businessService: BusinessService,
+
+    @Inject(forwardRef(() => MovementService))
+    private readonly movementService: MovementService,
   ) {}
 
   async create(productDto: ProductDto, businessId: string) {
     const business = await this.businessService.findOne(businessId);
     const product = { ...productDto, business };
-    return await this.productRepository.save(product);
+    const savedProduct = await this.productRepository.save(product);
+    await this.createMovement(
+      MovementType.InitialStock,
+      MovementOperationType.Increment,
+      productDto.stockQuantity,
+      productDto.stockQuantity,
+      businessId,
+      savedProduct.id,
+    );
+    return savedProduct;
   }
 
   async findAll(productQueryDto: ProductQueryDto, businessId: string) {
@@ -54,6 +72,7 @@ export class ProductService {
   }
 
   async update(id: string, productDto: ProductDto, businessId: string) {
+    //ADD BUSINESS ID CHECK
     validateUUID(MODULES.USER, id);
     await this.productRepository.update(id, {
       name: productDto.name,
@@ -84,11 +103,30 @@ export class ProductService {
     updateProductStockDto: UpdateProductStockDto,
     businessId: string,
   ) {
-    validateUUID(MODULES.USER, id);
+    validateUUID(MODULES.PRODUCT, id);
+    const product = await this.findOne(id, businessId);
+
+    const stockDifference =
+      updateProductStockDto.stockQuantity - product.stockQuantity;
+    const movementOperation =
+      stockDifference >= 0
+        ? MovementOperationType.Increment
+        : MovementOperationType.Decrement;
+
+    await this.createMovement(
+      MovementType.ManualAdjustment,
+      movementOperation,
+      stockDifference,
+      updateProductStockDto.stockQuantity,
+      businessId,
+      id,
+    );
+
     await this.productRepository.update(id, {
       stockQuantity: updateProductStockDto.stockQuantity,
     });
-    return await this.findOne(id, businessId);
+
+    return { ...product, stockQuantity: updateProductStockDto.stockQuantity };
   }
 
   private generateQueryBuilder = (
@@ -110,5 +148,24 @@ export class ProductService {
     addSearchQuery(queryBuilder, ProductSearchType.sku, productQueryDto.s_sku);
 
     return queryBuilder;
+  };
+
+  private createMovement = async (
+    movementType: MovementType,
+    movementOp: MovementOperationType,
+    movementQuantity: number,
+    movementUpdatedStock: number,
+    businessId: string,
+    productId: string,
+  ) => {
+    const movementDto: MovementDto = {
+      movementType: movementType,
+      operation: movementOp,
+      quantity: Math.abs(movementQuantity),
+      updatedStock: movementUpdatedStock,
+      businessId: businessId,
+      productId: productId,
+    };
+    return await this.movementService.create(movementDto, businessId);
   };
 }

@@ -8,6 +8,7 @@ import { AuthProvider } from './auth/providers/auth.provider';
 import { LoggerConfigModule } from './config/logger/logger.module';
 import { BusinessModule } from './business/business.module';
 import { ProductModule } from './product/product.module';
+import { MovementModule } from './movement/movement.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ProductModule } from './product/product.module';
     UserModule,
     BusinessModule,
     ProductModule,
+    MovementModule,
   ],
   providers: [AuthProvider],
 })

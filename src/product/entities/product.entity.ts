@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DB_TABLE_NAMES } from 'src/common/constants/db-table';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { Business } from 'src/business/entities/business.entity';
@@ -6,6 +6,7 @@ import {
   CURRENCY,
   UNIT_OF_MEASURE,
 } from 'src/common/constants/enums/product.enum';
+import { Movement } from 'src/movement/entities/movement.entity';
 
 @Entity(DB_TABLE_NAMES.PRODUCT)
 export class Product extends BaseEntity {
@@ -33,4 +34,8 @@ export class Product extends BaseEntity {
   @ManyToOne(() => Business, (business) => business.products)
   @JoinColumn({ name: 'business_id' })
   business: Business;
+
+  @OneToMany(() => Movement, (movement) => movement.product)
+  @JoinColumn()
+  movements: Movement[];
 }
