@@ -1,9 +1,8 @@
-import { Injectable, Inject, Logger, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MovementDto } from './dto/movement.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Movement } from './entities/movement.entity';
-import { Repository } from 'typeorm';
-import { BusinessService } from 'src/business/business.service';
+import { EntityManager, Repository } from 'typeorm';
 import { MovementQueryDto } from './dto/movement-query.dto';
 import { paginateData } from 'src/common/helpers/paginate-data';
 import { DB_TABLE_NAMES } from 'src/common/constants/db-table';
@@ -13,36 +12,50 @@ import { validateUUID } from 'src/common/helpers/validations';
 import { MODULES } from 'src/common/constants/modules';
 import { httpBadRequest } from 'src/common/helpers/http-response';
 import { notFoundIdMessage } from 'src/common/helpers/messages';
-import { ProductService } from '../product/product.service';
 import { movementLogMessage } from '../common/helpers/messages';
+import { Business } from 'src/business/entities/business.entity';
+import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
 export class MovementService {
   constructor(
     @InjectRepository(Movement)
     private movementRepository: Repository<Movement>,
-
-    @Inject(BusinessService)
-    private readonly businessService: BusinessService,
-
-    @Inject(forwardRef(() => ProductService))
-    private readonly productService: ProductService,
   ) {}
 
-  async create(movementDto: MovementDto, businessId: string) {
-    const business = await this.businessService.findOne(businessId);
-    const product = await this.productService.findOne(
-      movementDto.productId,
-      businessId,
-    );
-    const movement = { ...movementDto, businessId: business.id, product };
-    const savedMovement = await this.movementRepository.save(movement);
+  async createWithManager(manager: EntityManager, movementDto: MovementDto) {
+    const businessExists = await manager.findOne(Business, {
+      where: { id: movementDto.businessId },
+    });
+    if (!businessExists)
+      throw httpBadRequest(
+        notFoundIdMessage(MODULES.BUSINESS, movementDto.businessId),
+      );
+
+    const productExists = await manager.findOne(Product, {
+      where: { id: movementDto.productId },
+    });
+    if (!productExists)
+      throw httpBadRequest(
+        notFoundIdMessage(MODULES.PRODUCT, movementDto.productId),
+      );
+
+    const movement = manager.create(Movement, {
+      ...movementDto,
+      quantity: Math.abs(movementDto.quantity),
+      business: { id: movementDto.businessId },
+      product: { id: movementDto.productId },
+    });
+
+    const savedMovement = await manager.save(movement);
+
     Logger.log(
       movementLogMessage(
-        movementDto.movementType,
-        movementDto.operation,
-        movementDto.productId,
-        movementDto.quantity.toString(),
+        savedMovement.id,
+        savedMovement.movementType,
+        savedMovement.operation,
+        savedMovement.quantity,
+        savedMovement.product.id,
       ),
     );
     return savedMovement;

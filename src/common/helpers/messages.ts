@@ -26,6 +26,7 @@ export const movementLogMessage = (
   movementId: string,
   movementType: string,
   movementOp: string,
+  movementQuantity: number,
   productId: string,
 ) =>
-  `Movement created - ID: ${movementId}, Type: ${movementType}, Operation: ${movementOp}, Product ID: ${productId}`;
+  `Movement created - ID: ${movementId}, Type: ${movementType}, Operation: ${movementOp}, Quantity: ${movementQuantity}, Product ID: ${productId}`;

@@ -62,8 +62,8 @@ export class UserService {
   }
 
   async update(id: string, userDto: UserDto, businessId: string) {
-    //ADD BUSINESS ID CHECK
     validateUUID(MODULES.USER, id);
+    await this.businessService.findOne(businessId);
     await this.userRepository.update(id, {
       nid: userDto.nid,
       firstname: userDto.firstname,

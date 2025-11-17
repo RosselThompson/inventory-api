@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,7 +10,7 @@ import { MovementModule } from 'src/movement/movement.module';
   imports: [
     TypeOrmModule.forFeature([Product]),
     BusinessModule,
-    forwardRef(() => MovementModule),
+    MovementModule,
   ],
   controllers: [ProductController],
   providers: [ProductService],

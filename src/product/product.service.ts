@@ -1,7 +1,7 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { ProductDto, UpdateProductStockDto } from './dto/product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Product } from 'src/product/entities/product.entity';
 import { BusinessService } from 'src/business/business.service';
 import { ProductQueryDto } from './dto/product-query.dto';
@@ -20,6 +20,7 @@ import {
   MovementOperationType,
   MovementType,
 } from '../common/constants/enums/movement.enum';
+import { runInTransaction } from 'src/common/helpers/run-in-transaction';
 
 @Injectable()
 export class ProductService {
@@ -32,21 +33,30 @@ export class ProductService {
 
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(productDto: ProductDto, businessId: string) {
-    const business = await this.businessService.findOne(businessId);
-    const product = { ...productDto, business };
-    const savedProduct = await this.productRepository.save(product);
-    await this.createMovement(
-      MovementType.InitialStock,
-      MovementOperationType.Increment,
-      productDto.stockQuantity,
-      productDto.stockQuantity,
-      businessId,
-      savedProduct.id,
-    );
-    return savedProduct;
+    await this.businessService.findOne(businessId);
+
+    return await runInTransaction(this.dataSource, async (manager) => {
+      const product = manager.create(Product, {
+        ...productDto,
+        business: { id: businessId },
+      });
+      const savedProduct = await manager.save(product);
+      await this.movementService.createWithManager(manager, {
+        movementType: MovementType.InitialStock,
+        operation: MovementOperationType.Increment,
+        quantity: productDto.stockQuantity,
+        updatedStock: productDto.stockQuantity,
+        businessId,
+        productId: savedProduct.id,
+      });
+
+      return savedProduct;
+    });
   }
 
   async findAll(productQueryDto: ProductQueryDto, businessId: string) {
@@ -72,15 +82,14 @@ export class ProductService {
   }
 
   async update(id: string, productDto: ProductDto, businessId: string) {
-    //ADD BUSINESS ID CHECK
-    validateUUID(MODULES.USER, id);
+    validateUUID(MODULES.PRODUCT, id);
+    await this.businessService.findOne(businessId);
     await this.productRepository.update(id, {
       name: productDto.name,
       sku: productDto.sku,
       unitOfMeasure: productDto.unitOfMeasure,
       price: productDto.price,
       currency: productDto.currency,
-      stockQuantity: productDto.stockQuantity,
       description: productDto.description,
     });
     return await this.findOne(id, businessId);
@@ -105,28 +114,35 @@ export class ProductService {
   ) {
     validateUUID(MODULES.PRODUCT, id);
     const product = await this.findOne(id, businessId);
+    const productId = product.id;
 
     const stockDifference =
       updateProductStockDto.stockQuantity - product.stockQuantity;
+
     const movementOperation =
       stockDifference >= 0
         ? MovementOperationType.Increment
         : MovementOperationType.Decrement;
 
-    await this.createMovement(
-      MovementType.ManualAdjustment,
-      movementOperation,
-      stockDifference,
-      updateProductStockDto.stockQuantity,
+    const movementDto: MovementDto = {
+      movementType: MovementType.ManualAdjustment,
+      operation: movementOperation,
+      quantity: stockDifference,
+      updatedStock: updateProductStockDto.stockQuantity,
       businessId,
-      id,
-    );
+      productId,
+    };
 
-    await this.productRepository.update(id, {
-      stockQuantity: updateProductStockDto.stockQuantity,
+    return await runInTransaction(this.dataSource, async (manager) => {
+      await manager.update(
+        Product,
+        { id: productId },
+        { stockQuantity: updateProductStockDto.stockQuantity },
+      );
+      await this.movementService.createWithManager(manager, movementDto);
+
+      return { ...product, stockQuantity: updateProductStockDto.stockQuantity };
     });
-
-    return { ...product, stockQuantity: updateProductStockDto.stockQuantity };
   }
 
   private generateQueryBuilder = (
@@ -148,24 +164,5 @@ export class ProductService {
     addSearchQuery(queryBuilder, ProductSearchType.sku, productQueryDto.s_sku);
 
     return queryBuilder;
-  };
-
-  private createMovement = async (
-    movementType: MovementType,
-    movementOp: MovementOperationType,
-    movementQuantity: number,
-    movementUpdatedStock: number,
-    businessId: string,
-    productId: string,
-  ) => {
-    const movementDto: MovementDto = {
-      movementType: movementType,
-      operation: movementOp,
-      quantity: Math.abs(movementQuantity),
-      updatedStock: movementUpdatedStock,
-      businessId: businessId,
-      productId: productId,
-    };
-    return await this.movementService.create(movementDto, businessId);
   };
 }
