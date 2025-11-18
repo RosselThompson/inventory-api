@@ -4,5 +4,7 @@ export const DB_TABLE_NAMES = {
   PRODUCT: 'products',
   MOVEMENT: 'movements',
   SALE: 'sales',
+  SALE_ITEM: 'sale_items',
+  SALE_PAYMENT: 'sale_payments',
   RETURN: 'returns',
 };

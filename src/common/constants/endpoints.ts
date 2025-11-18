@@ -3,4 +3,5 @@ export const ENDPOINTS = {
   BUSINESS: 'business',
   PRODUCT: 'product',
   MOVEMENT: 'movement',
+  SALE: 'sale',
 };

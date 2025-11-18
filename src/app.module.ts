@@ -9,6 +9,7 @@ import { LoggerConfigModule } from './config/logger/logger.module';
 import { BusinessModule } from './business/business.module';
 import { ProductModule } from './product/product.module';
 import { MovementModule } from './movement/movement.module';
+import { SaleModule } from './sale/sale.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MovementModule } from './movement/movement.module';
     BusinessModule,
     ProductModule,
     MovementModule,
+    SaleModule,
   ],
   providers: [AuthProvider],
 })

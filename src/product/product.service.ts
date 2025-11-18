@@ -1,7 +1,7 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ProductDto, UpdateProductStockDto } from './dto/product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Product } from 'src/product/entities/product.entity';
 import { BusinessService } from 'src/business/business.service';
 import { ProductQueryDto } from './dto/product-query.dto';
@@ -21,6 +21,7 @@ import {
   MovementType,
 } from '../common/constants/enums/movement.enum';
 import { runInTransaction } from 'src/common/helpers/run-in-transaction';
+import { MovementStockDto } from 'src/movement/dto/movement-stock.dto';
 
 @Injectable()
 export class ProductService {
@@ -31,7 +32,7 @@ export class ProductService {
     @Inject(BusinessService)
     private readonly businessService: BusinessService,
 
-    @Inject(forwardRef(() => MovementService))
+    @Inject(MovementService)
     private readonly movementService: MovementService,
 
     private readonly dataSource: DataSource,
@@ -143,6 +144,40 @@ export class ProductService {
 
       return { ...product, stockQuantity: updateProductStockDto.stockQuantity };
     });
+  }
+
+  async updateStockWithManager(
+    manager: EntityManager,
+    productId: string,
+    businessId: string,
+    movementStock: MovementStockDto,
+  ): Promise<Product> {
+    validateUUID(MODULES.PRODUCT, productId);
+    const product = await this.findOne(productId, businessId);
+
+    const updatedStock =
+      movementStock.operation === MovementOperationType.Increment
+        ? product.stockQuantity + movementStock.quantity
+        : product.stockQuantity - movementStock.quantity;
+
+    const movementDto: MovementDto = {
+      movementType: movementStock.movementType,
+      operation: movementStock.operation,
+      quantity: movementStock.quantity,
+      updatedStock: updatedStock,
+      businessId,
+      productId,
+    };
+
+    await manager.update(
+      Product,
+      { id: productId },
+      { stockQuantity: updatedStock },
+    );
+
+    await this.movementService.createWithManager(manager, movementDto);
+
+    return { ...product, stockQuantity: updatedStock };
   }
 
   private generateQueryBuilder = (

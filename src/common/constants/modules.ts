@@ -3,4 +3,5 @@ export const MODULES = {
   BUSINESS: 'Business',
   PRODUCT: 'Product',
   MOVEMENT: 'Movement',
+  SALE: 'Sale',
 };

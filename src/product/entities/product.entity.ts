@@ -7,6 +7,7 @@ import {
   UNIT_OF_MEASURE,
 } from 'src/common/constants/enums/product.enum';
 import { Movement } from 'src/movement/entities/movement.entity';
+import { SaleItem } from 'src/sale/entities/sale-item.entity';
 
 @Entity(DB_TABLE_NAMES.PRODUCT)
 export class Product extends BaseEntity {
@@ -38,4 +39,8 @@ export class Product extends BaseEntity {
   @OneToMany(() => Movement, (movement) => movement.product)
   @JoinColumn()
   movements: Movement[];
+
+  @OneToMany(() => SaleItem, (saleItem) => saleItem.product)
+  @JoinColumn()
+  sales: SaleItem[];
 }
