@@ -6,6 +6,7 @@ import { MODULES } from 'src/common/constants/modules';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentBusiness } from 'src/auth/decorators/current-business.decorator';
 import { SaleQueryDto } from './dto/sale-query.dto';
+import { CreateSaleReturnDto } from './dto/create-sale-return.dto';
 
 @Controller(ENDPOINTS.SALE)
 @ApiTags(MODULES.SALE)
@@ -31,5 +32,14 @@ export class SaleController {
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentBusiness() businessId: string) {
     return this.saleService.findOne(id, businessId);
+  }
+
+  @Post(':id/return')
+  createReturn(
+    @Param('id') id: string,
+    @Body() createSaleReturnDto: CreateSaleReturnDto,
+    @CurrentBusiness() businessId: string,
+  ) {
+    return this.saleService.createReturn(id, createSaleReturnDto, businessId);
   }
 }

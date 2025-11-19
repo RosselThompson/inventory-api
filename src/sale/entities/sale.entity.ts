@@ -5,6 +5,7 @@ import { SalePayment } from './sale-payment.entity';
 import { CURRENCY } from 'src/common/constants/enums/product.enum';
 import { SaleItem } from './sale-item.entity';
 import { SaleStatusType } from 'src/common/constants/enums/sale.enum';
+import { SaleReturn } from './sale-return.entity';
 
 @Entity(DB_TABLE_NAMES.SALE)
 export class Sale extends BaseEntity {
@@ -54,4 +55,8 @@ export class Sale extends BaseEntity {
   @OneToMany(() => SaleItem, (saleItem) => saleItem.sale)
   @JoinColumn()
   items: SaleItem[];
+
+  @OneToMany(() => SaleReturn, (saleReturn) => saleReturn.sale)
+  @JoinColumn()
+  returns: SaleReturn[];
 }

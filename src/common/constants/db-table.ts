@@ -6,5 +6,5 @@ export const DB_TABLE_NAMES = {
   SALE: 'sales',
   SALE_ITEM: 'sale_items',
   SALE_PAYMENT: 'sale_payments',
-  RETURN: 'returns',
+  SALE_RETURN: 'sale_returns',
 };

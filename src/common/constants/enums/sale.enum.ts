@@ -5,12 +5,15 @@ export enum SalePaymentMethodType {
   MOBILE_PAYMENT = 'MOBILE_PAYMENT',
   BANK_TRANSFER = 'BANK_TRANSFER',
   CHECK = 'CHECK',
+  REFUND_CASH = 'REFUND_CASH',
 }
 
 export enum SaleStatusType {
   CREATED = 'CREATED',
   PAID = 'PAID',
   CANCELLED = 'CANCELLED',
+  PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED',
+  REFUNDED = 'REFUNDED',
 }
 
 export enum SaleSortByType {

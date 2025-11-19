@@ -29,6 +29,9 @@ import { validateUUID } from 'src/common/helpers/validations';
 import { MODULES } from 'src/common/constants/modules';
 import { httpBadRequest } from 'src/common/helpers/http-response';
 import { notFoundIdMessage } from 'src/common/helpers/messages';
+import { CreateSaleReturnDto } from './dto/create-sale-return.dto';
+import { SaleReturnDto } from './dto/sale-return.dto';
+import { SaleReturn } from './entities/sale-return.entity';
 
 @Injectable()
 export class SaleService {
@@ -91,10 +94,61 @@ export class SaleService {
     validateUUID(MODULES.SALE, id);
     const response = await this.saleRepository.findOne({
       where: { id, businessId },
-      relations: ['items', 'payments'],
+      relations: [
+        'items',
+        'items.product',
+        'payments',
+        'returns',
+        'returns.product',
+      ],
     });
     if (!response) throw httpBadRequest(notFoundIdMessage(MODULES.SALE, id));
     return response;
+  }
+
+  async createReturn(
+    saleId: string,
+    createSaleReturnDto: CreateSaleReturnDto,
+    businessId: string,
+  ) {
+    const currentSale = await this.findOne(saleId, businessId);
+    const { returns, refund } = createSaleReturnDto;
+    const currentItemIds = currentSale.items.map((item) =>
+      item.product.id.toLowerCase(),
+    );
+    const returnItemIds = returns.map((ret) => ret.productId.toLowerCase());
+
+    this.validateReturn(
+      returnItemIds,
+      currentItemIds,
+      refund.amountPaid,
+      currentSale.totalAmount,
+    );
+
+    return await runInTransaction(this.dataSource, async (manager) => {
+      const savedReturns = await this.createSaleReturnsWithManager(
+        manager,
+        returns,
+        currentSale.id,
+        businessId,
+      );
+
+      const savedRefund = await this.createSalePaymentsWithManager(
+        manager,
+        [refund],
+        currentSale.id,
+        businessId,
+      );
+
+      const updatedSale = await manager.update(Sale, currentSale.id, {
+        saleStatus:
+          refund.amountPaid === currentSale.totalAmount
+            ? SaleStatusType.REFUNDED
+            : SaleStatusType.PARTIALLY_REFUNDED,
+      });
+
+      return { sale: updatedSale, returns: savedReturns, refund: savedRefund };
+    });
   }
 
   private generateQueryBuilder = (
@@ -196,4 +250,60 @@ export class SaleService {
 
     return await manager.save(newPayments);
   };
+
+  private createSaleReturnsWithManager = async (
+    manager: EntityManager,
+    returns: SaleReturnDto[],
+    saleId: string,
+    businessId: string,
+  ) => {
+    const newItems = [];
+
+    for (const item of returns) {
+      const movementStockDto = {
+        movementType: MovementType.ReturnSale,
+        operation: MovementOperationType.Increment,
+        quantity: item.quantity,
+        referenceType: MovementReferenceType.Sales,
+        referenceId: saleId,
+      };
+
+      await this.productService.updateStockWithManager(
+        manager,
+        item.productId,
+        businessId,
+        movementStockDto,
+      );
+
+      const entity = manager.create(SaleReturn, {
+        ...item,
+        businessId,
+        sale: { id: saleId },
+        product: { id: item.productId },
+      });
+
+      newItems.push(entity);
+    }
+
+    return await manager.save(newItems);
+  };
+
+  private validateReturn(
+    returnItemIds: string[],
+    currentItemIds: string[],
+    refundAmountPaid: number,
+    saleTotalAmount: number,
+  ) {
+    if (!returnItemIds.every((id) => currentItemIds.includes(id))) {
+      throw httpBadRequest(
+        `One or more return items are invalid for this sale.`,
+      );
+    }
+
+    if (refundAmountPaid > saleTotalAmount) {
+      throw httpBadRequest(
+        `Refund amount cannot exceed the total sale amount of ${saleTotalAmount}`,
+      );
+    }
+  }
 }
